@@ -1,7 +1,5 @@
 package ex2
 
-import ex2.Question.*
-
 /**
  * For each article, the reviewer has to reply to all the following questions
  */
@@ -66,6 +64,7 @@ object ConferenceReviewing:
   def apply(): ConferenceReviewing = ConferenceReviewingImpl()
 
   private class ConferenceReviewingImpl(private var reviews: List[(Int, Map[Question, Int])] = List.empty) extends ConferenceReviewing:
+    import Question.*
 
     def loadReview(article: Int, scores: Map[Question, Int]): Unit =
       if scores.size < Question.values.length then
@@ -101,7 +100,7 @@ object ConferenceReviewing:
 
     private def isArticleAccepted(article: Int): Boolean =
       averageFinalScore(article) > 5.0 &&
-        reviews.exists { case (x, y) => x == article && y.get(Question.RELEVANCE).exists(_ >= 8) }
+        reviews.exists { case (x, y) => x == article && y.get(RELEVANCE).exists(_ >= 8) }
 
     private def averageWeightedFinalScore(article: Int): Double =
       val scores = reviews.filter((a, _) => a == article).map((_, m) => m(FINAL) * m(CONFIDENCE) / 10.0)

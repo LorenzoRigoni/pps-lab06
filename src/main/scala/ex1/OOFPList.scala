@@ -45,13 +45,22 @@ enum List[A]:
     case h :: t => t.foldLeft(h)(op)
 
   // Exercise: implement the following methods
-  def zipWithValue[B](value: B): List[(A, B)] = ???
-  def length(): Int = ???
-  def zipWithIndex: List[(A, Int)] = ???
-  def partition(predicate: A => Boolean): (List[A], List[A]) = ???
-  def span(predicate: A => Boolean): (List[A], List[A]) = ???
-  def takeRight(n: Int): List[A] = ???
-  def collect(predicate: PartialFunction[A, A]): List[A] = ???
+  def zipWithValue[B](value: B): List[(A, B)] = map((_, value))
+
+  def length(): Int = foldLeft(0)((b, _) => b + 1)
+
+  def zipWithIndex: List[(A, Int)] = foldRight((Nil[(A, Int)](), length() - 1))((v, acc) => ((v, acc._2) :: acc._1, acc._2 - 1))._1
+
+  def partition(predicate: A => Boolean): (List[A], List[A]) = foldRight((Nil[A](), Nil[A]()))((v, acc) => if predicate(v) then (v :: acc._1, acc._2) else (acc._1, v :: acc._2))
+
+  private def getFirstIndex(predicate: A => Boolean): Int = zipWithIndex.foldLeft((0, true))((acc, v) => if predicate(v._1) && acc._2 then (v._2 + 1, true) else (acc._1, false))._1
+
+  def span(predicate: A => Boolean): (List[A], List[A]) =
+    zipWithIndex.foldRight((Nil[A](), Nil[A]()))((v, acc) => if getFirstIndex(predicate) > v._2 then (v._1 :: acc._1, acc._2) else (acc._1, v._1 :: acc._2))
+
+  def takeRight(n: Int): List[A] = zipWithIndex.filter(_._2 >= length() - n).map(_._1)
+
+  def collect(predicate: PartialFunction[A, A]): List[A] = flatMap(a => if predicate.isDefinedAt(a) then predicate(a) :: Nil() else Nil())
 // Factories
 object List:
 
